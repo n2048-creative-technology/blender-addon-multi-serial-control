@@ -5,9 +5,8 @@ import serial
 import serial.tools.list_ports
 
 class SerialManager:
-    def __init__(self, baudrate=9600, timeout=1):
+    def __init__(self, timeout=1):
         """Initialize the SerialManager"""
-        self.baudrate = baudrate
         self.timeout = timeout
         self.ports = {}  # Dictionary to store ports
         self.connections = {}  # Dictionary to store serial connections
@@ -60,7 +59,8 @@ class SerialManager:
                 continue  # ✅ Prevent duplicate threads
 
             try:
-                self.connections[port_name] = serial.Serial(port_name, self.baudrate, timeout=self.timeout)
+                baudrate = bpy.context.scene.n2048_baud_rate
+                self.connections[port_name] = serial.Serial(port_name, baudrate, timeout=self.timeout)
                 self.running[port_name] = True
                 self.threads[port_name] = threading.Thread(target=self._write_to_port, args=(port_name,), daemon=True)  # ✅ Corrected tuple formatx
                 self.threads[port_name].start()

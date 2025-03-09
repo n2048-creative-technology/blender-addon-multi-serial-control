@@ -16,6 +16,11 @@ class N2048_PT_Panel(bpy.types.Panel):
         # Triplet List
         layout.template_list("N2048_UL_TripletList", "", scene, "n2048_triplets", scene, "n2048_index")
 
+
+        # Baud Rate Dropdown
+        layout.label(text="Baud Rate:")
+        layout.prop(scene, "n2048_baud_rate", text="")
+        
         layout.operator("n2048.add_triplet", icon="ADD", text="Add")
 
         row = layout.row()
