@@ -41,12 +41,12 @@ class SerialManager:
                         key = (obj.name, prop)
 
                         if key not in self.last_sent_values or self.last_sent_values[key] != value:
-                            message = f"{obj.name}|{prop}|{value}\n"
+                            message = f"{obj.name}|{prop}|{float(value):.2f}\n"
                             serial_connection.write(message.encode())
                             serial_connection.flush()
                             self.last_sent_values[key] = value  # ✅ Store last sent value
 
-                        time.sleep(0.1)  # Maintain refresh rate
+                        #time.sleep(0.1)  # Maintain refresh rate
                 
             except serial.SerialException as e:
                 break
