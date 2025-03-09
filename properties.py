@@ -1,0 +1,44 @@
+import bpy
+import serial.tools.list_ports
+
+# Function to get available serial ports
+def get_serial_ports(self, context):
+    ports = serial.tools.list_ports.comports()
+    port_list = [(port.device, port.device, "") for port in ports]
+
+    # Ensure "None" is always present as a default option
+    if not port_list:
+        port_list.append(("None", "No Ports Available", ""))
+
+    return [("None", "None", "")] + port_list  # Always prepend "None" as an option
+
+# Define available transform properties
+TRANSFORM_ITEMS = [
+    ("location.x", "Location X", ""),
+    ("location.y", "Location Y", ""),
+    ("location.z", "Location Z", ""),
+    ("rotation_euler.x", "Rotation X", ""),
+    ("rotation_euler.y", "Rotation Y", ""),
+    ("rotation_euler.z", "Rotation Z", ""),
+    ("scale.x", "Scale X", ""),
+    ("scale.y", "Scale Y", ""),
+    ("scale.z", "Scale Z", ""),
+]
+
+# Triplet property group
+class N2048_TripletProperty(bpy.types.PropertyGroup):
+    object: bpy.props.PointerProperty(name="Object", type=bpy.types.Object)
+    serial_port: bpy.props.EnumProperty(name="Serial Port", description="Select a serial port", items=get_serial_ports)
+    transform_property: bpy.props.EnumProperty(name="Property", description="Transform property", items=TRANSFORM_ITEMS)
+    has_serial_stream: bpy.props.BoolProperty(name="Enable Serial Stream", default=False)
+
+# Register Properties
+def register():
+    bpy.utils.register_class(N2048_TripletProperty)
+    bpy.types.Scene.n2048_triplets = bpy.props.CollectionProperty(type=N2048_TripletProperty)
+    bpy.types.Scene.n2048_index = bpy.props.IntProperty(name="Index", default=0)
+
+def unregister():
+    del bpy.types.Scene.n2048_triplets
+    del bpy.types.Scene.n2048_index
+    bpy.utils.unregister_class(N2048_TripletProperty)
