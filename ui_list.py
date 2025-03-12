@@ -9,6 +9,7 @@ class N2048_UL_TripletList(bpy.types.UIList):
             row.prop(item, "object", text="", icon='OBJECT_DATA')
             row.prop(item, "serial_port", text="")
             row.prop(item, "transform_property", text="")
+            row.prop(item, "scale_factor", text="")
             row.prop(item, "has_serial_stream", text="")
 
             # ✅ Fixed: Pass index directly inside the operator call

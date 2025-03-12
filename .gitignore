@@ -1,1 +1,4 @@
 __pycache__/
+__pycache__/
+__pycache__/__init__.cpython-311.pyc __pycache__/n2048_pnl.cpython-311.pyc __pycache__/n2048_serial_port_op.cpython-311.pyc __pycache__/operators.cpython-311.pyc __pycache__/panels.cpython-311.pyc __pycache__/properties.cpython-311.pyc __pycache__/serial_manager.cpython-311.pyc __pycache__/ui_list.cpython-311.pyc
+__pycache__

@@ -35,7 +35,7 @@ class SerialManager:
                         obj = triplet.object
                         prop = triplet.transform_property
                         attr, sub_attr = prop.split(".")
-                        value = getattr(getattr(obj, attr), sub_attr)
+                        value = getattr(getattr(obj, attr), sub_attr)*triplet.scale_factor
 
                         key = (obj.name, prop)
 
