@@ -222,9 +222,13 @@ void loop() {
       long dt = currentTime - lastSpeedUpdateTime;
       lastSpeedUpdateTime = millis();
 
-      //stepper.setSpeed(curTarget-position);
-      stepper.moveTo(curTarget);
-      stepper.run();
+      float err = curTarget-position;
+      //Serial.println(err);
+      if(abs(err)>10){
+        stepper.setSpeed(curTarget-position);
+        //stepper.moveTo(curTarget);
+        stepper.runSpeed();
+      }
     }
         
   }

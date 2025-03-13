@@ -50,7 +50,7 @@ class N2048_TripletProperty(bpy.types.PropertyGroup):
     object: bpy.props.PointerProperty(name="Object", type=bpy.types.Object)
     serial_port: bpy.props.EnumProperty(name="Serial Port", description="Select a serial port", items=get_serial_ports)
     transform_property: bpy.props.EnumProperty(name="Property", description="Transform property", items=TRANSFORM_ITEMS)
-    scale_factor: bpy.props.FloatProperty(name="Scale Factor", description="Scale factor", default=1.)
+    scale_factor: bpy.props.FloatProperty(name="Scale Factor", description="Scale factor", default=1.0)
     has_serial_stream: bpy.props.BoolProperty(name="Enable Serial Stream", default=False)
     
 # Register Properties
