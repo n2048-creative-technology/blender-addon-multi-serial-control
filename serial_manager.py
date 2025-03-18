@@ -34,7 +34,7 @@ class SerialManager:
                         obj = triplet.object
                         prop = triplet.transform_property
                         attr, sub_attr = prop.split(".")
-                        value = getattr(getattr(obj, attr), sub_attr)*triplet.scale_factor
+                        value = getattr(getattr(obj, attr), sub_attr)*triplet.scale_factor+triplet.offset
 
                         key = (obj.name, prop)
 
@@ -42,9 +42,7 @@ class SerialManager:
                             message = f"{obj.name}|{prop}|{float(value):.2f}\n"
                             serial_connection.write(message.encode())
                             serial_connection.flush()
-                            self.last_sent_values[key] = value  # ✅ Store last sent value
-
-                        #time.sleep(0.1)  # Maintain refresh rate
+                            self.last_sent_values[key] = value  
                 
             except serial.SerialException as e:
                 break

@@ -5,3 +5,18 @@ Allows to send  transformation properties from one or many object to one or many
 
 
 To Debug, it's possible to take advantage ot the [dual-serial-repeater](https://github.com/n2048-creative-technology/dual-arduino-serial-repeater)
+
+
+
+Replace USB port names
+
+```
+ls /dev/ttyUSB* /dev/ttyACM*
+udevadm info -a -n /dev/ttyACM0
+
+sudo nano /etc/udev/rules.d/99-arduino.rules
+sudo udevadm control --reload-rules
+sudo udevadm trigger
+```
+
+(name the arduinos as N2048_##)

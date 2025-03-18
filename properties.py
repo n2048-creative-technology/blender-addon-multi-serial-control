@@ -1,6 +1,6 @@
 import bpy
 import serial.tools.list_ports
-
+import glob
 
 SERIAL_BAUD_RATES = [
     ("300", "300", ""),
@@ -24,6 +24,12 @@ SERIAL_BAUD_RATES = [
 def get_serial_ports(self, context):
     ports = serial.tools.list_ports.comports()
     port_list = [(port.device, port.device, "") for port in ports]
+
+
+    # Add udev-linked ports
+    arduino_ports = glob.glob('/dev/N2048*')  # Finds all custom symlinked Arduino ports
+    for port in arduino_ports:
+        port_list.append((port, port, ""))  # Append to port list
 
     # Ensure "None" is always present as a default option
     if not port_list:
@@ -51,6 +57,7 @@ class N2048_TripletProperty(bpy.types.PropertyGroup):
     serial_port: bpy.props.EnumProperty(name="Serial Port", description="Select a serial port", items=get_serial_ports)
     transform_property: bpy.props.EnumProperty(name="Property", description="Transform property", items=TRANSFORM_ITEMS)
     scale_factor: bpy.props.FloatProperty(name="Scale Factor", description="Scale factor", default=1.0)
+    offset: bpy.props.FloatProperty(name="Offset", description="Offset", default=0.0)
     has_serial_stream: bpy.props.BoolProperty(name="Enable Serial Stream", default=False)
     
 # Register Properties
