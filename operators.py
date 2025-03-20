@@ -14,6 +14,7 @@ class N2048_OT_AddTriplet(bpy.types.Operator):
 
         triplet.transform_property = "location.x"
         triplet.has_serial_stream = False
+        triplet.learn_mode = False
         triplet.scale_factor = 1.0
         triplet.offset = 0.0
         

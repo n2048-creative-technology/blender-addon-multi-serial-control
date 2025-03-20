@@ -11,9 +11,8 @@ class N2048_UL_TripletList(bpy.types.UIList):
             row.prop(item, "transform_property", text="")
             row.prop(item, "scale_factor", text="")
             row.prop(item, "offset", text="")
+            row.prop(item, "learn_mode", text="")
             row.prop(item, "has_serial_stream", text="")
-
-            # ✅ Fixed: Pass index directly inside the operator call
             row.operator("n2048.remove_triplet", text="", icon="X").index = index
 
 # Register UI List

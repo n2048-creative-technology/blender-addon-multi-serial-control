@@ -1,6 +1,8 @@
 #include <AccelStepper.h>
 #include <Wire.h>
+
 #define AS5600_ADDR 0x36  // I2C address of the AS5600
+#define RAW_ANGLE_REG 0x0C
 
 const int debug = 0;
 
@@ -38,12 +40,17 @@ unsigned long previousMillis = 0;  // Stores the last time the event was trigger
 // Define the AccelStepper interface type for a driver (with step and direction pins)
 AccelStepper stepper(AccelStepper::DRIVER, stepPin, dirPin);
 
+
+int last_position = 0;
+bool first_read = true;
+
 bool prevAlarmState = LOW;
 
 float curTarget = 0;
 float curPos = 0;
 float prevPos = 0;
 float prevTarget = 0;
+bool enabled = 1;
 
 uint16_t position = 0; // p[osition from magnetic encoder
 
@@ -56,12 +63,14 @@ unsigned long lastCommandTime = 0;
 
 float maxSpeed = 4000;
 float minSpeed = 10;
-
  
 void disableStepper(){
+  enabled=false;
   digitalWrite(enablePin, HIGH);
 }
+
 void enableStepper(){
+  enabled=true;
   digitalWrite(enablePin, LOW);
 }
 
@@ -87,14 +96,29 @@ void checkSerial() {
 
       if (firstDelim != -1 && secondDelim != -1) {
           String objName = input.substring(0, firstDelim);
+          objName.trim();
+
           String paramName = input.substring(firstDelim + 1, secondDelim);
+          paramName.trim();
+
           float value = input.substring(secondDelim + 1).toFloat();
 
-          // Set curTarget with the extracted value
-          curTarget = value;
+          if(paramName=="learn_mode") {
+            disableStepper();
+            if(prevPos != curPos){
+              Serial.println(curPos);
+              Serial.flush();
+            }      
+          }
+          else {
+            enableStepper();
+            // Set curTarget with the extracted value
+            curTarget = value;
+          }
 
           // Debug output
           if(debug){
+            Serial.print("input: "); Serial.println(input);
             Serial.print("Object: "); Serial.println(objName);
             Serial.print("Parameter: "); Serial.println(paramName);
             Serial.print("Value: "); Serial.println(curTarget);
@@ -102,33 +126,6 @@ void checkSerial() {
       }   
   }
 }
-
-
-void scanI2CDevices() {
-  byte error, address;
-  int nDevices = 0;
-  
-  if(debug) Serial.println("Scanning for I2C devices on Wire1...");
-  for (address = 1; address < 127; address++) {
-    Wire1.beginTransmission(address);
-    error = Wire1.endTransmission();
-    
-    if (error == 0) {
-      if(debug){ Serial.print("I2C device found at address 0x");
-        if (address < 16) Serial.print("0");
-        Serial.print(address, HEX);
-        Serial.println(" !");
-      }
-      nDevices++;
-    }
-  }
-  if(debug) {
-    if (nDevices == 0) Serial.println("No I2C devices found");
-    else Serial.println("done");
-  }
-}
-
-
 
 void checkAlarm(){
   // Check alarm pin status
@@ -147,15 +144,61 @@ void checkAlarm(){
   }
 }
 
+void readRawAngle() {
+  Wire1.beginTransmission(AS5600_ADDR);
+  Wire1.write(RAW_ANGLE_REG);
+  Wire1.endTransmission();
+
+  Wire1.requestFrom(AS5600_ADDR, 2);
+  
+  if (Wire1.available() == 2) {
+    int position = Wire1.read() << 8 | Wire1.read();
+
+    if (position == -1) {
+      Serial.println("Error reading AS5600");
+      return;
+    }
+
+    if (first_read) {
+        last_position = position;
+        first_read = false;
+    }
+
+    int delta = position - last_position;
+
+    // Detect wrap-around
+    if (delta > 2048) {  
+        // Counterclockwise wrap (e.g., 10 → 4090)
+        curPos -= (4096 - delta);
+    } 
+    else if (delta < -2048) {  
+        // Clockwise wrap (e.g., 4090 → 10)
+        curPos += (4096 + delta);
+    } 
+    else {
+        // Normal movement
+        curPos += delta;
+    }
+
+    last_position = position;
+  }
+  else{
+    Serial.println("no i2c data from AS5600");
+  }
+}
+
 void setup() {
  
   // Encoder direction:
   pinMode(dio1Pin, OUTPUT);
   digitalWrite(dio1Pin, LOW);
   
-  // Begin the second I2C bus (Wire1) with custom pins
-  Wire1.begin(dio2Pin, dio3Pin);  // Custom pins for second I2C bus: SDA = GPIO 12, SCL = GPIO 13
-  
+  // Begin the second I2C bus (Wir1) with custom pins
+  //Wire.begin(); 
+  Wire1.begin(dio2Pin, dio3Pin); 
+
+  Serial.println("Error reading AS5600");
+
   Serial.begin(115200);  // Initialize serial communication for debugging
 
   // Set enable pin as output
@@ -178,9 +221,6 @@ void setup() {
 
   stepper.setPinsInverted(false, false, false);  // Invert only the direction pin
   stepper.setCurrentPosition(0);
-
-  scanI2CDevices();
-
   
 }
 
@@ -197,40 +237,34 @@ void loop() {
 
       // Execute the task every second
       Serial.println("alive!");
+      Serial.print("curTarget: ");
+      Serial.println(curTarget);
+      Serial.print("curPos: ");
+      Serial.println(curPos);
     }
   }
 
-  // Read the AS5600 position (just an example, specific AS5600 communication would depend on library or datasheet)
-  Wire1.beginTransmission(AS5600_ADDR);
-  Wire1.write(0x0C);  // Address of the position register
-  Wire1.endTransmission();
+  readRawAngle();
   
-  Wire1.requestFrom(AS5600_ADDR, 2);
+  checkAlarm();
 
-  if (Wire1.available() >= 2) {
-    position = Wire1.read() << 8 | Wire1.read();
-    curPos = (float)position;
- 
-    if (debug) printPos();
-
-    unsigned long currentTime = millis();
-    
-    checkAlarm();
-
-    // If motor is enabled, run the stepper to the target position
-    if (digitalRead(enablePin) == LOW) { 
-      long dt = currentTime - lastSpeedUpdateTime;
-      lastSpeedUpdateTime = millis();
-
-      float err = curTarget-position;
-      //Serial.println(err);
-      if(abs(err)>10){
-        stepper.setSpeed(curTarget-position);
-        //stepper.moveTo(curTarget);
-        stepper.runSpeed();
-      }
+  // If motor is enabled, run the stepper to the target position
+  if (enabled) { 
+    float err = curTarget-curPos;
+    //Serial.println(err);
+    if(abs(err)>0){
+      stepper.setSpeed(curTarget-curPos);
+      //stepper.moveTo(curTarget);
     }
-        
   }
+  else{
+    Serial.println(curPos);
+    delay(1000/60);
+  }
+  prevPos=curPos;
+
+  prevTarget= curTarget;  
+
+  stepper.runSpeed();
 
 }

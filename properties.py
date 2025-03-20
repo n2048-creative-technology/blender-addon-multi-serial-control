@@ -59,7 +59,8 @@ class N2048_TripletProperty(bpy.types.PropertyGroup):
     scale_factor: bpy.props.FloatProperty(name="Scale Factor", description="Scale factor", default=1.0)
     offset: bpy.props.FloatProperty(name="Offset", description="Offset", default=0.0)
     has_serial_stream: bpy.props.BoolProperty(name="Enable Serial Stream", default=False)
-    
+    learn_mode: bpy.props.BoolProperty(name="Learn mode", default=False)
+
 # Register Properties
 def register():
     bpy.utils.register_class(N2048_TripletProperty)
