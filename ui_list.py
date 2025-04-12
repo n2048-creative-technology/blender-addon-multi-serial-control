@@ -7,7 +7,9 @@ class N2048_UL_TripletList(bpy.types.UIList):
         if self.layout_type in {'DEFAULT', 'COMPACT'}:
             row = layout.row(align=True)
             row.prop(item, "object", text="", icon='OBJECT_DATA')
+            # row.prop(item, "serial_port", text="")
             row.prop(item, "serial_port", text="")
+
             row.prop(item, "transform_property", text="")
             row.prop(item, "scale_factor", text="")
             row.prop(item, "offset", text="")

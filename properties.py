@@ -20,22 +20,22 @@ SERIAL_BAUD_RATES = [
     ("2000000", "2000000", ""),
 ]
 
-# Function to get available serial ports
-def get_serial_ports(self, context):
-    ports = serial.tools.list_ports.comports()
-    port_list = [(port.device, port.device, "") for port in ports]
+# # Function to get available serial ports
+# def get_serial_ports(self, context):
+#     ports = serial.tools.list_ports.comports()
+#     port_list = [(port.device, port.device, "") for port in ports]
 
 
-    # Add udev-linked ports
-    arduino_ports = glob.glob('/dev/N2048*')  # Finds all custom symlinked Arduino ports
-    for port in arduino_ports:
-        port_list.append((port, port, ""))  # Append to port list
+#     # Add udev-linked ports
+#     arduino_ports = glob.glob('/dev/N2048*')  # Finds all custom symlinked Arduino ports
+#     for port in arduino_ports:
+#         port_list.append((port, port, ""))  # Append to port list
 
-    # Ensure "None" is always present as a default option
-    if not port_list:
-        port_list.append(("None", "No Ports Available", ""))
+#     # Ensure "None" is always present as a default option
+#     if not port_list:
+#         port_list.append(("None", "No Ports Available", ""))
 
-    return [("None", "None", "")] + port_list  # Always prepend "None" as an option
+#     return [("None", "None", "")] + port_list  # Always prepend "None" as an option
 
 # Define available transform properties
 TRANSFORM_ITEMS = [
@@ -54,7 +54,8 @@ TRANSFORM_ITEMS = [
 # Triplet property group
 class N2048_TripletProperty(bpy.types.PropertyGroup):
     object: bpy.props.PointerProperty(name="Object", type=bpy.types.Object)
-    serial_port: bpy.props.EnumProperty(name="Serial Port", description="Select a serial port", items=get_serial_ports)
+    # serial_port: bpy.props.EnumProperty(name="Serial Port", description="Select a serial port", items=get_serial_ports)
+    serial_port: bpy.props.StringProperty(name="Serial Port", description="Enter or select a serial port")
     transform_property: bpy.props.EnumProperty(name="Property", description="Transform property", items=TRANSFORM_ITEMS)
     scale_factor: bpy.props.FloatProperty(name="Scale Factor", description="Scale factor", default=1.0)
     offset: bpy.props.FloatProperty(name="Offset", description="Offset", default=0.0)
@@ -72,8 +73,11 @@ def register():
         items=SERIAL_BAUD_RATES,
         default="115200"
     )
+    bpy.types.Scene.n2048_serial_ports = bpy.props.CollectionProperty(type=bpy.types.PropertyGroup)
+
 def unregister():
     del bpy.types.Scene.n2048_triplets
     del bpy.types.Scene.n2048_index
     del bpy.types.Scene.n2048_baud_rate
+    del bpy.types.Scene.n2048_serial_ports
     bpy.utils.unregister_class(N2048_TripletProperty)

@@ -1,4 +1,25 @@
 import bpy
+import glob
+import serial.tools.list_ports
+
+# class N2048_OT_RefreshPorts(bpy.types.Operator):
+#     bl_idname = "n2048.refresh_ports"
+#     bl_label = "Refresh Serial Ports"
+
+#     def execute(self, context):
+#         scene = context.scene
+#         scene.n2048_serial_ports.clear()
+        
+#         ports = serial.tools.list_ports.comports()
+#         for port in ports:
+#             entry = scene.n2048_serial_ports.add()
+#             entry.name = port.device
+
+#         for path in glob.glob('/dev/N2048*'):
+#             entry = scene.n2048_serial_ports.add()
+#             entry.name = path
+
+#         return {'FINISHED'}
 
 class N2048_OT_AddTriplet(bpy.types.Operator):
     bl_idname = "n2048.add_triplet"
@@ -9,8 +30,9 @@ class N2048_OT_AddTriplet(bpy.types.Operator):
         triplet.object = None  # Default to no object selected
 
         # Ensure we assign a valid serial port
-        available_ports = [port[0] for port in triplet.bl_rna.properties['serial_port'].enum_items]
-        triplet.serial_port = available_ports[0] if available_ports else "None"
+        # available_ports = [port[0] for port in triplet.bl_rna.properties['serial_port'].enum_items]
+        # triplet.serial_port = available_ports[0] if available_ports else "None"
+        triplet.serial_port = "None"
 
         triplet.transform_property = "location.x"
         triplet.has_serial_stream = False
@@ -84,6 +106,7 @@ def register():
     bpy.utils.register_class(N2048_OT_Stop)
     bpy.utils.register_class(N2048_OT_Run)
     bpy.utils.register_class(N2048_OT_GetUniqueSerialPorts)
+    # bpy.utils.register_class(N2048_OT_RefreshPorts)
     
 
 def unregister():
@@ -92,4 +115,4 @@ def unregister():
     bpy.utils.unregister_class(N2048_OT_Stop)
     bpy.utils.unregister_class(N2048_OT_Run)
     bpy.utils.unregister_class(N2048_OT_GetUniqueSerialPorts)
-
+    # bpy.utils.unregister_class(N2048_OT_RefreshPorts)

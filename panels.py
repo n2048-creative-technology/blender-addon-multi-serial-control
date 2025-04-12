@@ -37,6 +37,8 @@ class N2048_PT_Panel(bpy.types.Panel):
         col = row.column()
         col.operator("n2048.stop", text="Stop")
 
+        # layout.operator("n2048.refresh_ports", text="Refresh Ports")
+
 
 # Register Panel
 def register():
